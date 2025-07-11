@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>에어컨 제어 시스템 설정</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .section {
+            margin-bottom: 40px;
+            padding: 25px;
+            border: 1px solid #e1e5e9;
+            border-radius: 10px;
+            background: #f8f9fa;
+        }
+
+        .section h2 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #34495e;
+        }
+
+        input[type="text"], input[type="number"], input[type="password"] {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        input[type="text"]:focus, input[type="number"]:focus, input[type="password"]:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #95a5a6 0%, #7f8c8d 100%);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+        }
+
+        .status {
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            font-weight: 600;
+        }
+
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .status.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .content {
+                padding: 20px;
+            }
+        }
+
+        .device-status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 10px 0;
+        }
+
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .status-online {
+            background: #27ae60;
+        }
+
+        .status-offline {
+            background: #e74c3c;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🌬️ 에어컨 제어 시스템</h1>
+            <p>시스템 설정 및 디바이스 관리</p>
+        </div>
+
+        <div class="content">
+            <!-- 시스템 상태 -->
+            <div class="section">
+                <h2>📊 시스템 상태</h2>
+                <div class="grid">
+                    <div>
+                        <div class="device-status">
+                            <span class="status-indicator status-offline" id="serverStatus"></span>
+                            <span>웹 서버: <span id="serverStatusText">확인 중...</span></span>
+                        </div>
+                        <div class="device-status">
+                            <span class="status-indicator status-offline" id="esp32Status"></span>
+                            <span>ESP32: <span id="esp32StatusText">확인 중...</span></span>
+                        </div>
+                    </div>
+                    <div>
+                        <p><strong>서버 버전:</strong> <span id="serverVersion">-</span></p>
+                        <p><strong>시작 시간:</strong> <span id="startTime">-</span></p>
+                    </div>
+                </div>
+                <button class="btn" onclick="checkSystemStatus()">상태 새로고침</button>
+            </div>
+
+            <!-- ESP32 설정 -->
+            <div class="section">
+                <h2>🔧 ESP32 디바이스 설정</h2>
+                <div class="grid">
+                    <div class="form-group">
+                        <label for="esp32Name">디바이스 이름</label>
+                        <input type="text" id="esp32Name" value="ESP32 Aircon Controller">
+                    </div>
+                    <div class="form-group">
+                        <label for="esp32IP">IP 주소</label>
+                        <input type="text" id="esp32IP" value="192.168.1.100" placeholder="192.168.1.100">
+                    </div>
+                    <div class="form-group">
+                        <label for="esp32Port">포트</label>
+                        <input type="number" id="esp32Port" value="80" min="1" max="65535">
+                    </div>
+                    <div class="form-group">
+                        <label for="esp32ApiKey">API 키</label>
+                        <input type="password" id="esp32ApiKey" value="aircon_control_2024">
+                    </div>
+                </div>
+                <button class="btn btn-success" onclick="saveDeviceSettings()">설정 저장</button>
+                <button class="btn" onclick="testConnection()">연결 테스트</button>
+            </div>
+
+            <!-- 에어컨 제어 테스트 -->
+            <div class="section">
+                <h2>🎛️ 에어컨 제어 테스트</h2>
+                <div class="grid">
+                    <div>
+                        <h3>전원 제어</h3>
+                        <button class="btn btn-success" onclick="controlAircon('power', 'on')">전원 ON</button>
+                        <button class="btn btn-danger" onclick="controlAircon('power', 'off')">전원 OFF</button>
+                    </div>
+                    <div>
+                        <h3>온도 제어</h3>
+                        <button class="btn" onclick="controlAircon('temp', 'up')">온도 UP</button>
+                        <button class="btn" onclick="controlAircon('temp', 'down')">온도 DOWN</button>
+                    </div>
+                    <div>
+                        <h3>모드 제어</h3>
+                        <button class="btn" onclick="controlAircon('mode', 'cool')">냉방</button>
+                        <button class="btn" onclick="controlAircon('mode', 'heat')">난방</button>
+                        <button class="btn" onclick="controlAircon('mode', 'fan')">송풍</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 시스템 관리 -->
+            <div class="section">
+                <h2>⚙️ 시스템 관리</h2>
+                <button class="btn" onclick="restartServer()">서버 재시작</button>
+                <button class="btn btn-secondary" onclick="backupDatabase()">데이터베이스 백업</button>
+                <button class="btn btn-danger" onclick="resetSettings()">설정 초기화</button>
+            </div>
+
+            <!-- 상태 메시지 -->
+            <div id="statusMessage"></div>
+
+            <!-- 로딩 인디케이터 -->
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>처리 중...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // API 기본 URL
+        const API_BASE = '/api';
+        
+        // 페이지 로드 시 초기화
+        document.addEventListener('DOMContentLoaded', function() {
+            checkSystemStatus();
+            loadDeviceSettings();
+        });
+
+        // 시스템 상태 확인
+        async function checkSystemStatus() {
+            showLoading(true);
+            try {
+                const response = await fetch(`${API_BASE}/device/status`);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    updateSystemStatus(data);
+                } else {
+                    showStatus('서버 상태 확인 실패', 'error');
+                }
+            } catch (error) {
+                showStatus('네트워크 오류: ' + error.message, 'error');
+            }
+            showLoading(false);
+        }
+
+        // 시스템 상태 업데이트
+        function updateSystemStatus(data) {
+            const serverStatus = document.getElementById('serverStatus');
+            const serverStatusText = document.getElementById('serverStatusText');
+            const esp32Status = document.getElementById('esp32Status');
+            const esp32StatusText = document.getElementById('esp32StatusText');
+            
+            // 서버 상태
+            serverStatus.className = 'status-indicator status-online';
+            serverStatusText.textContent = '온라인';
+            
+            // ESP32 상태
+            if (data.device_status === 'online') {
+                esp32Status.className = 'status-indicator status-online';
+                esp32StatusText.textContent = '온라인';
+            } else {
+                esp32Status.className = 'status-indicator status-offline';
+                esp32StatusText.textContent = '오프라인';
+            }
+            
+            document.getElementById('serverVersion').textContent = data.version || '-';
+            document.getElementById('startTime').textContent = new Date().toLocaleString();
+        }
+
+        // 디바이스 설정 로드
+        async function loadDeviceSettings() {
+            try {
+                const response = await fetch(`${API_BASE}/settings`);
+                const data = await response.json();
+                
+                if (response.ok && data.device) {
+                    document.getElementById('esp32Name').value = data.device.name || '';
+                    document.getElementById('esp32IP').value = data.device.ip_address || '';
+                    document.getElementById('esp32Port').value = data.device.port || 80;
+                    document.getElementById('esp32ApiKey').value = data.device.api_key || '';
+                }
+            } catch (error) {
+                console.error('설정 로드 실패:', error);
+            }
+        }
+
+        // 디바이스 설정 저장
+        async function saveDeviceSettings() {
+            showLoading(true);
+            
+            const deviceData = {
+                name: document.getElementById('esp32Name').value,
+                ip_address: document.getElementById('esp32IP').value,
+                port: parseInt(document.getElementById('esp32Port').value),
+                api_key: document.getElementById('esp32ApiKey').value
+            };
+
+            try {
+                const response = await fetch(`${API_BASE}/settings`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(deviceData)
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showStatus('설정이 성공적으로 저장되었습니다.', 'success');
+                } else {
+                    showStatus('설정 저장 실패: ' + (data.error || '알 수 없는 오류'), 'error');
+                }
+            } catch (error) {
+                showStatus('네트워크 오류: ' + error.message, 'error');
+            }
+            
+            showLoading(false);
+        }
+
+        // 연결 테스트
+        async function testConnection() {
+            showLoading(true);
+            
+            try {
+                const response = await fetch(`${API_BASE}/settings/test-connection`, {
+                    method: 'POST'
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showStatus('ESP32 연결 테스트 성공!', 'success');
+                } else {
+                    showStatus('연결 테스트 실패: ' + (data.error || '알 수 없는 오류'), 'error');
+                }
+            } catch (error) {
+                showStatus('연결 테스트 실패: ' + error.message, 'error');
+            }
+            
+            showLoading(false);
+        }
+
+        // 에어컨 제어
+        async function controlAircon(type, action) {
+            showLoading(true);
+            
+            let endpoint, payload;
+            
+            switch(type) {
+                case 'power':
+                    endpoint = `${API_BASE}/device/control`;
+                    payload = { power: action };
+                    break;
+                case 'temp':
+                    endpoint = `${API_BASE}/device/control`;
+                    payload = { action: action };
+                    break;
+                case 'mode':
+                    endpoint = `${API_BASE}/device/control`;
+                    payload = { mode: action };
+                    break;
+            }
+
+            try {
+                const response = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showStatus(`에어컨 ${type} 제어 성공: ${action}`, 'success');
+                } else {
+                    showStatus('제어 실패: ' + (data.error || '알 수 없는 오류'), 'error');
+                }
+            } catch (error) {
+                showStatus('제어 실패: ' + error.message, 'error');
+            }
+            
+            showLoading(false);
+        }
+
+        // 서버 재시작
+        async function restartServer() {
+            if (!confirm('서버를 재시작하시겠습니까?')) return;
+            
+            showLoading(true);
+            
+            try {
+                const response = await fetch(`${API_BASE}/settings/restart`, {
+                    method: 'POST'
+                });
+                
+                if (response.ok) {
+                    showStatus('서버 재시작 명령이 전송되었습니다.', 'info');
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 3000);
+                } else {
+                    showStatus('서버 재시작 실패', 'error');
+                }
+            } catch (error) {
+                showStatus('서버 재시작 실패: ' + error.message, 'error');
+            }
+            
+            showLoading(false);
+        }
+
+        // 데이터베이스 백업
+        async function backupDatabase() {
+            showLoading(true);
+            
+            try {
+                const response = await fetch(`${API_BASE}/settings/backup`, {
+                    method: 'POST'
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showStatus('데이터베이스 백업이 완료되었습니다.', 'success');
+                } else {
+                    showStatus('백업 실패: ' + (data.error || '알 수 없는 오류'), 'error');
+                }
+            } catch (error) {
+                showStatus('백업 실패: ' + error.message, 'error');
+            }
+            
+            showLoading(false);
+        }
+
+        // 설정 초기화
+        async function resetSettings() {
+            if (!confirm('모든 설정을 초기화하시겠습니까? 이 작업은 되돌릴 수 없습니다.')) return;
+            
+            showLoading(true);
+            
+            try {
+                const response = await fetch(`${API_BASE}/settings/reset`, {
+                    method: 'POST'
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showStatus('설정이 초기화되었습니다. 페이지를 새로고침합니다.', 'info');
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 2000);
+                } else {
+                    showStatus('초기화 실패: ' + (data.error || '알 수 없는 오류'), 'error');
+                }
+            } catch (error) {
+                showStatus('초기화 실패: ' + error.message, 'error');
+            }
+            
+            showLoading(false);
+        }
+
+        // 상태 메시지 표시
+        function showStatus(message, type) {
+            const statusDiv = document.getElementById('statusMessage');
+            statusDiv.className = `status ${type}`;
+            statusDiv.textContent = message;
+            
+            // 5초 후 자동 숨김
+            setTimeout(() => {
+                statusDiv.className = 'status';
+                statusDiv.textContent = '';
+            }, 5000);
+        }
+
+        // 로딩 표시/숨김
+        function showLoading(show) {
+            const loading = document.getElementById('loading');
+            loading.style.display = show ? 'block' : 'none';
+        }
+    </script>
+</body>
+</html> 

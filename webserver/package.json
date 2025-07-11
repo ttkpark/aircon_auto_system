@@ -1,0 +1,39 @@
+{
+  "name": "aircon-control-webserver",
+  "version": "1.0.0",
+  "description": "에어컨 자동 제어 시스템 웹 서버",
+  "main": "src/app.js",
+  "scripts": {
+    "start": "node src/app.js",
+    "dev": "nodemon src/app.js",
+    "test": "jest",
+    "build": "echo 'No build step required'"
+  },
+  "keywords": [
+    "aircon",
+    "control",
+    "esp32",
+    "iot"
+  ],
+  "author": "Aircon Control System",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2",
+    "sqlite3": "^5.1.6",
+    "jsonwebtoken": "^9.0.2",
+    "bcrypt": "^5.1.1",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "axios": "^1.6.0",
+    "helmet": "^7.1.0",
+    "express-rate-limit": "^7.1.5",
+    "winston": "^3.11.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1",
+    "jest": "^29.7.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+} 
